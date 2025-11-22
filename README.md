@@ -1,14 +1,10 @@
 # 👁️ User Concentration Monitor API
 
-Flask API that monitors user concentration by tracking:
-- **Eye position** - Alerts if looking away from screen for >10 seconds
-- **Posture** - Determines user interest level based on spine angle
-
-Returns JSON for frontend integration.
+Flask REST API that monitors user concentration by tracking eye position and posture. Returns JSON responses for frontend integration.
 
 ## 🚀 Quick Start
 
-### 1. Setup
+### Local Setup
 
 ```bash
 cd aiml
@@ -17,12 +13,6 @@ venv\Scripts\activate    # Windows
 # source venv/bin/activate  # Linux/Mac
 
 pip install -r requirements.txt
-```
-
-### 2. Run Locally
-
-```bash
-cd aiml
 python app.py
 ```
 
@@ -31,7 +21,7 @@ API will be available at `http://localhost:5000`
 ## 📡 API Endpoints
 
 ### `GET /`
-Health check and API info.
+Health check and API information.
 
 **Response:**
 ```json
@@ -56,22 +46,20 @@ Health check endpoint.
 }
 ```
 
+### `GET /api/analyze`
+Returns API usage information.
+
 ### `POST /api/analyze`
 Analyze frame for eye tracking and posture.
 
-**Request Options:**
-
-1. **With base64 image (recommended for production):**
+**Request:**
 ```json
 {
   "image": "base64_encoded_image_string"
 }
 ```
 
-2. **Empty body (uses webcam if available):**
-```json
-{}
-```
+Or empty body `{}` to use webcam (local testing only).
 
 **Response:**
 ```json
@@ -99,18 +87,6 @@ Analyze frame for eye tracking and posture.
 **Alert Response (when looking away >10s):**
 ```json
 {
-  "timestamp": 1731652010000,
-  "eye_tracking": {
-    "looking_away": true,
-    "duration": 12.5,
-    "confidence": 0.85
-  },
-  "posture": {
-    "interest_score": 0.45,
-    "interest_level": "medium",
-    "spine_angle": 22.3,
-    "slouch": false
-  },
   "alert": {
     "triggered": true,
     "message": "⚠️ ALERT: Looking away for 12.5 seconds!",
@@ -125,7 +101,6 @@ Analyze frame for eye tracking and posture.
 ### JavaScript Example
 
 ```javascript
-// Send base64 image from webcam
 async function analyzeFrame(videoElement) {
   // Convert video frame to base64
   const canvas = document.createElement('canvas');
@@ -136,11 +111,9 @@ async function analyzeFrame(videoElement) {
   const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
   
   // Send to API
-  const response = await fetch('http://localhost:5000/api/analyze', {
+  const response = await fetch('https://your-api-url/api/analyze', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: base64Image })
   });
   
@@ -151,17 +124,11 @@ async function analyzeFrame(videoElement) {
     showNotification(data.alert.message);
   }
   
-  // Update UI
-  updateInterestLevel(data.posture.interest_level);
-  updateEyeStatus(data.eye_tracking.looking_away);
-  
   return data;
 }
 
-// Continuous monitoring
-setInterval(() => {
-  analyzeFrame(videoElement);
-}, 100); // ~10 FPS
+// Continuous monitoring (~10 FPS)
+setInterval(() => analyzeFrame(videoElement), 100);
 ```
 
 ### Python Example
@@ -192,17 +159,22 @@ print(data)
 
 ## 🚀 Deploy on Render
 
-### 1. Push to GitHub
+### Method 1: Using render.yaml (Recommended)
 
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin <your-github-repo-url>
-git push -u origin main
-```
+1. **Push to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Deploy to Render"
+   git push
+   ```
 
-### 2. Deploy on Render
+2. **Deploy on Render:**
+   - Go to [Render Dashboard](https://dashboard.render.com)
+   - Click **"New +"** → **"Blueprint"**
+   - Select your repository
+   - Render will auto-detect `render.yaml` and configure the service
+
+### Method 2: Manual Configuration
 
 1. Go to [Render Dashboard](https://dashboard.render.com)
 2. Click **"New +"** → **"Web Service"**
@@ -210,38 +182,37 @@ git push -u origin main
 4. Configure:
    - **Name**: `concentration-monitor`
    - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r aiml/requirements.txt`
-   - **Start Command**: `cd aiml && gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 app:app`
-   - **Port**: Auto-detected
+   - **Python Version**: Set to `3.11.0` in Environment Variables (MediaPipe requires Python ≤3.11)
+   - **Build Command**: `python3.11 -m pip install --upgrade pip && python3.11 -m pip install -r aiml/requirements.txt`
+   - **Start Command**: `cd aiml && python3.11 -m gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 app:app`
 5. Click **"Create Web Service"**
 
-### 3. Using render.yaml (Alternative)
+### Important: Python Version
 
-If you have `render.yaml` in your repo root, Render will auto-detect it:
+**MediaPipe only supports Python ≤3.11.** Make sure to set Python 3.11.0 in Render Dashboard:
+- Go to **Settings** → **Environment Variables**
+- Add: `PYTHON_VERSION` = `3.11.0`
 
-1. Push `render.yaml` to your repo
-2. Go to Render Dashboard
-3. Click **"New +"** → **"Blueprint"**
-4. Select your repository
-5. Render will use the configuration from `render.yaml`
+Or use the `runtime.txt` file (already included in repo).
 
 ## 📦 Requirements
 
-- Python 3.8+
-- Webcam (for local testing without base64)
-- MediaPipe (for eye tracking)
-- OpenCV (for image processing)
-- Flask (for API)
-- Gunicorn (for production)
+- Python 3.11 (MediaPipe compatibility)
+- Flask 3.0+
+- Flask-CORS 4.0+
+- MediaPipe 0.10+
+- OpenCV 4.8+
+- NumPy 1.24+
+- Gunicorn 21.2+ (production)
 
 ## 🔧 How It Works
 
-1. **Eye Tracking**: Uses MediaPipe Face Mesh to detect eye position and head pose
-2. **Looking Away Detection**: Calculates head yaw/pitch and eye offset from center
-3. **Duration Tracking**: Tracks how long user has been looking away
-4. **Alert System**: Triggers alert when duration >10 seconds
-5. **Posture Analysis**: Uses MediaPipe Pose to analyze spine/neck angle
-6. **Interest Calculation**: Based on posture quality
+1. **Eye Tracking**: Uses MediaPipe Face Mesh with head pose estimation
+2. **Looking Away Detection**: Analyzes head yaw/pitch and eye position
+3. **Duration Tracking**: Maintains state for "looking away" duration
+4. **Alert System**: Triggers alert when duration exceeds 10 seconds
+5. **Posture Analysis**: Uses MediaPipe Pose to calculate spine/neck angle
+6. **Interest Calculation**: Determines interest level based on posture quality
 
 ## 🎯 Features
 
@@ -249,18 +220,34 @@ If you have `render.yaml` in your repo root, Render will auto-detect it:
 - ✅ CORS enabled for frontend integration
 - ✅ Base64 image support
 - ✅ Webcam fallback (local testing)
-- ✅ Real-time eye tracking
-- ✅ Posture analysis
+- ✅ Real-time eye tracking with head pose
+- ✅ Posture analysis (upper body)
 - ✅ Alert system (>10s looking away)
 - ✅ Production-ready (Gunicorn)
+- ✅ Dynamic confidence calculation
 
 ## 📝 Notes
 
-- For production, always send base64 images (webcam not available on Render)
-- API maintains state for "looking away" duration tracking
-- All responses are JSON formatted
-- CORS is enabled for cross-origin requests
+- **Production**: Always send base64 images (webcam not available on Render)
+- **State**: API maintains state for "looking away" duration tracking
+- **CORS**: Enabled for cross-origin requests
+- **Python Version**: Must be 3.11 or lower for MediaPipe compatibility
+
+## 🐛 Troubleshooting
+
+### MediaPipe Installation Fails
+- Ensure Python version is 3.11 or lower
+- Set `PYTHON_VERSION=3.11.0` in Render environment variables
+
+### Webcam Not Available
+- Use base64 image encoding instead
+- Webcam only works locally, not on Render
+
+### Build Fails on Render
+- Check Python version is set to 3.11.0
+- Verify `runtime.txt` contains `3.11.0`
+- Check build logs for specific errors
 
 ---
 
-**Simple, Clean, API-Ready** - Just send images and get concentration metrics!
+**Simple, Clean, API-Ready** - Send images and get concentration metrics!
