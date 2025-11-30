@@ -23,7 +23,7 @@
 
 ## 🌟 Overview
 
-**GetLockedIn** is a comprehensive productivity platform that combines AI-powered webcam monitoring, gamification mechanics, and social features to help students stay focused during study sessions. Built with the MERN stack and powered by computer vision, it provides real-time feedback on concentration levels while making studying engaging through points, leaderboards, and clan competitions.
+**DeepDive** is a comprehensive productivity platform that combines AI-powered webcam monitoring, gamification mechanics, and social features to help students stay focused during study sessions. Built with the MERN stack and powered by computer vision, it provides real-time feedback on concentration levels while making studying engaging through points, leaderboards, and clan competitions.
 
 ### 🎥 Demo
 
@@ -244,7 +244,7 @@ VITE v5.0.0 ready in 500ms
 ## 📁 Project Structure
 
 ```
-getlockedin/
+hack_this_fall/
 ├── backend/                    # Node.js Express Backend
 │   ├── src/
 │   │   ├── config/            # Database, Redis config
