@@ -27,8 +27,8 @@
 
 ### 🎥 Demo
 
-> **Live Demo:** [Coming Soon]  
-> **Video Tutorial:** [Coming Soon]
+> **Live Demo:** [(https://hack-this-fall-nu.vercel.app)]  
+> **Video Tutorial:** (https://youtu.be/mmbvYDbdWF4)]
 
 ### 🎯 Problem It Solves
 
