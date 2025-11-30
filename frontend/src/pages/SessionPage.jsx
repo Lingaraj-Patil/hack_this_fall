@@ -3,7 +3,7 @@ import { Clock, Pause, Square, Play, Settings, Maximize2, Home, BarChart3, Troph
 import { Link, useNavigate } from 'react-router-dom';
 import Webcam from 'react-webcam';
 import TodoList from '../components/Widgets/TodoList';
-import FocusHeatMap from '../components/Widgets/FocusHeatMap';
+import FocusHeatMap from '../components/Widgets/FocusHeatmap';
 import MusicPlayer from '../components/Widgets/MusicPlayer';
 import DraggableWidget from '../components/Widgets/DraggableWidget';
 import { useSession } from '../hooks/useSession';
