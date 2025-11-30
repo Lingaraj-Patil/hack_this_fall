@@ -22,6 +22,17 @@ async function updateStatus() {
       statusDot.className = 'status-dot active';
       statusText.textContent = 'Session Active ✓';
       sessionInfo.textContent = `Session ID: ${response.activeSessionId.substring(0, 8)}...`;
+      // show last pause reason if present (should be empty for active sessions)
+      // show last pause reason if present (should be empty for active sessions)
+      if (response.lastPauseReason) {
+        const reasonEl = document.getElementById('pauseReason');
+        const map = {
+          auto_paused: 'Auto-paused by vision (away detected)',
+          vision_auto_pause: 'Auto-paused by vision (away detected)'
+        };
+        reasonEl.textContent = map[response.lastPauseReason] || `Last pause reason: ${response.lastPauseReason}`;
+        reasonEl.style.display = 'block';
+      }
       
       if (response.blockedSites && response.blockedSites.length > 0) {
         blockedSites.style.display = 'block';
@@ -35,6 +46,17 @@ async function updateStatus() {
       statusText.textContent = 'Session Inactive';
       sessionInfo.textContent = 'Start a session in the web app to begin tracking';
       blockedSites.style.display = 'none';
+      const reasonEl = document.getElementById('pauseReason');
+      if (response && response.lastPauseReason) {
+        const map = {
+          auto_paused: 'Auto-paused by vision (away detected)',
+          vision_auto_pause: 'Auto-paused by vision (away detected)'
+        };
+        reasonEl.textContent = map[response.lastPauseReason] || `Last pause reason: ${response.lastPauseReason}`;
+        reasonEl.style.display = 'block';
+      } else {
+        reasonEl.style.display = 'none';
+      }
     }
   });
 }

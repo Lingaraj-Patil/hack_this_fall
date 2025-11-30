@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { useAuthStore } from './store/authStore'
 import { useSocket } from './hooks/useSocket'
+import ThemeToggle from './components/Common/ThemeToggle'
+import ThemeProvider from './context/ThemeContext'
 
 // Pages
 import SessionPage from './pages/SessionPage'
@@ -23,8 +25,9 @@ function App() {
   useSocket()
 
   return (
-    <BrowserRouter>
-      <Toaster position="top-right" />
+    <ThemeProvider>
+      <BrowserRouter>
+  <Toaster position="top-right" />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -70,7 +73,8 @@ function App() {
           }
         />
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

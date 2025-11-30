@@ -32,8 +32,23 @@ class SessionController {
         return ApiResponse.error(res, 'You already have an active session', 400);
       }
 
-      // Check hearts
-      if (req.user.gamification.currentHearts <= 0) {
+      // Check hearts - regenerate if needed
+      const Helpers = require('../utils/helpers');
+      const { HEARTS } = require('../config/constants');
+      const currentHearts = Helpers.calculateHeartRegen(
+        req.user.gamification.lastHeartRegen,
+        req.user.gamification.maxHearts,
+        req.user.gamification.currentHearts
+      );
+      
+      // Update hearts if regenerated
+      if (currentHearts !== req.user.gamification.currentHearts) {
+        req.user.gamification.currentHearts = currentHearts;
+        req.user.gamification.lastHeartRegen = new Date();
+        await req.user.save();
+      }
+      
+      if (currentHearts <= 0) {
         return ApiResponse.error(res, 'No hearts remaining. Wait for regeneration.', 403);
       }
 
@@ -112,22 +127,35 @@ class SessionController {
   async resumeSession(req, res, next) {
     try {
       const { sessionId } = req.params;
+  // Make resume idempotent and resilient to race conditions.
+      // Find session by id and user regardless of status so we can return a meaningful result.
+  const session = await Session.findOne({ _id: sessionId, userId: req.userId });
 
-      const session = await Session.findOne({
-        _id: sessionId,
-        userId: req.userId,
-        status: SESSION_STATUS.PAUSED
-      });
+  logger.info(`Resume attempt for session ${sessionId} by user ${req.userId} - foundStatus: ${session ? session.status : 'not_found'}`);
 
       if (!session) {
-        return ApiResponse.error(res, 'Paused session not found', 404);
+        return ApiResponse.error(res, 'Session not found', 404);
       }
 
+      // If already active, return success (idempotent)
+      if (session.status === SESSION_STATUS.ACTIVE) {
+        return ApiResponse.success(res, session, 'Session already active');
+      }
+
+      // If session is completed/ended/abandoned, cannot resume
+      if ([SESSION_STATUS.COMPLETED, SESSION_STATUS.ABANDONED, SESSION_STATUS.IDLE].includes(session.status)) {
+        return ApiResponse.error(res, 'Cannot resume this session', 400);
+      }
+
+      // Otherwise transition paused/auto_paused -> active
       session.status = SESSION_STATUS.ACTIVE;
-      
       if (session.pauseLog.length > 0) {
         session.pauseLog[session.pauseLog.length - 1].resumedAt = new Date();
       }
+
+      // Clear visibility markers
+      if (session.metadata?.visibilityWindow) session.metadata.visibilityWindow = [];
+      if (session.metadata?.missingSince) delete session.metadata.missingSince;
 
       await session.save();
 

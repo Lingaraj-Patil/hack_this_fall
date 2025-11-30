@@ -79,12 +79,24 @@
       border-radius: 12px;
       font-weight: 600;
       font-size: 16px;
-      transition: transform 0.2s;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     .btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:active {
+      transform: translateY(0px);
+    }
+
+    .btn:focus {
+      outline: 2px solid rgba(255, 255, 255, 0.5);
+      outline-offset: 2px;
     }
 
     .blocked-site {
@@ -94,6 +106,24 @@
       display: inline-block;
       margin: 8px 0;
       font-family: monospace;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.35);
+      border-color: rgba(255, 255, 255, 0.9);
     }
   </style>
 </head>
@@ -119,18 +149,16 @@
         ❤️ Your future self will thank you
       </div>
     </div>
-    <a href="http://localhost:3000" class="btn">
-      Return to Dashboard
-    </a>
+    <div class="button-group">
+      <a href="http://localhost:3000" class="btn">
+        Return to Dashboard
+      </a>
+      <button id="searchBtn" class="btn secondary">
+        🔍 Search the Web
+      </button>
+    </div>
   </div>
 
-  <script>
-    // Get blocked site from URL parameter
-    const params = new URLSearchParams(window.location.search);
-    const site = params.get('site');
-    if (site) {
-      document.getElementById('siteName').textContent = site;
-    }
-  </script>
+  <script src="blocked.js"></script>
 </body>
 </html>

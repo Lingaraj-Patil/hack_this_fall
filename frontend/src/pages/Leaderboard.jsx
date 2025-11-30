@@ -4,6 +4,7 @@ import { Trophy, Medal, Crown, TrendingUp, Users, Clock } from 'lucide-react'
 import { gamificationAPI } from '../api/gamification'
 import { useAuth } from '../hooks/useAuth'
 import { formatDuration } from '../utils/formatTime'
+import DarkThemeLayout from '../components/Layout/DarkThemeLayout'
 import toast from 'react-hot-toast'
 
 export default function LeaderboardPage() {
@@ -57,43 +58,33 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Trophy className="w-8 h-8 text-yellow-500" />
-                Leaderboard
-              </h1>
-              <p className="text-gray-600 mt-1">Compete with the best students worldwide</p>
-            </div>
-
-            {/* User Rank Card */}
-            {userRank && userRank.rank && (
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-4 shadow-lg">
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold">#{userRank.rank}</div>
-                    <div className="text-xs opacity-90">Your Rank</div>
-                  </div>
-                  <div className="border-l border-white/30 pl-4">
-                    <div className="text-lg font-semibold">{userRank.entry?.points || 0} pts</div>
-                    <div className="text-xs opacity-90">
-                      Top {userRank.percentile}%
-                    </div>
-                  </div>
+    <DarkThemeLayout 
+      title="Leaderboard"
+      subtitle="Compete with the best students worldwide"
+    >
+      {/* User Rank Card */}
+      {userRank && userRank.rank && (
+        <div className="mb-6 flex justify-end">
+          <div className="glass rounded-2xl p-4">
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white">#{userRank.rank}</div>
+                <div className="text-xs text-white/80">Your Rank</div>
+              </div>
+              <div className="border-l border-white/30 pl-4">
+                <div className="text-lg font-semibold text-white">{userRank.entry?.points || 0} pts</div>
+                <div className="text-xs text-white/80">
+                  Top {userRank.percentile}%
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </header>
+      )}
 
-      <main className="max-w-7xl mx-auto px-8 py-8">
+      <div className="space-y-8">
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-gray-200">
+        <div className="flex gap-2 glass p-2 rounded-2xl">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -101,7 +92,7 @@ export default function LeaderboardPage() {
               className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  : 'text-white/80 hover:bg-white/10'
               }`}
             >
               <span className="mr-2">{tab.icon}</span>
@@ -112,7 +103,7 @@ export default function LeaderboardPage() {
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-16 h-16 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>
@@ -176,26 +167,26 @@ export default function LeaderboardPage() {
             )}
 
             {/* Full Leaderboard Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="glass rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-white/10 border-b border-white/20">
                     <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Rank</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">User</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Clan</th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Points</th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Sessions</th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Study Time</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-white">Rank</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-white">User</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-white">Clan</th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-white">Points</th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-white">Sessions</th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-white">Study Time</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-white/10">
                     {leaderboard?.entries?.map((entry, index) => (
                       <tr
                         key={entry.userId}
-                        className={`hover:bg-gray-50 transition ${
-                          entry.userId === user?._id ? 'bg-green-50' : ''
-                        } ${getRankColor(entry.rank)}`}
+                        className={`hover:bg-white/5 transition ${
+                          entry.userId === user?._id ? 'bg-green-500/20' : ''
+                        }`}
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
@@ -207,13 +198,13 @@ export default function LeaderboardPage() {
                             <img
                               src={entry.avatar}
                               alt={entry.username}
-                              className="w-10 h-10 rounded-full border-2 border-gray-200"
+                              className="w-10 h-10 rounded-full border-2 border-white/30"
                             />
                             <div>
-                              <p className="font-semibold text-gray-900">
+                              <p className="font-semibold text-white">
                                 {entry.username}
                                 {entry.userId === user?._id && (
-                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                  <span className="ml-2 text-xs bg-green-500 text-white px-2 py-1 rounded-full">
                                     You
                                   </span>
                                 )}
@@ -223,24 +214,24 @@ export default function LeaderboardPage() {
                         </td>
                         <td className="px-6 py-4">
                           {entry.clanName ? (
-                            <span className="text-sm text-gray-600 flex items-center gap-1">
+                            <span className="text-sm text-white/80 flex items-center gap-1">
                               <Users className="w-4 h-4" />
                               {entry.clanName}
                             </span>
                           ) : (
-                            <span className="text-sm text-gray-400">No clan</span>
+                            <span className="text-sm text-white/40">No clan</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <p className="font-bold text-lg text-purple-600">
+                          <p className="font-bold text-lg text-purple-300">
                             {entry.points}
                           </p>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <p className="text-gray-700">{entry.sessions}</p>
+                          <p className="text-white/80">{entry.sessions}</p>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <p className="text-gray-700 flex items-center justify-end gap-1">
+                          <p className="text-white/80 flex items-center justify-end gap-1">
                             <Clock className="w-4 h-4" />
                             {formatDuration(entry.studyTime)}
                           </p>
@@ -253,9 +244,9 @@ export default function LeaderboardPage() {
 
               {(!leaderboard?.entries || leaderboard.entries.length === 0) && (
                 <div className="text-center py-12">
-                  <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No rankings yet</p>
-                  <p className="text-gray-400 text-sm mt-2">
+                  <Trophy className="w-16 h-16 text-white/40 mx-auto mb-4" />
+                  <p className="text-white/60 text-lg">No rankings yet</p>
+                  <p className="text-white/40 text-sm mt-2">
                     Complete sessions to appear on the leaderboard
                   </p>
                 </div>
@@ -263,36 +254,36 @@ export default function LeaderboardPage() {
             </div>
 
             {/* Stats Footer */}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
-                <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="glass rounded-xl p-6 text-center">
+                <TrendingUp className="w-8 h-8 text-green-400 mx-auto mb-3" />
+                <p className="text-3xl font-bold text-white">
                   {leaderboard?.entries?.length || 0}
                 </p>
-                <p className="text-gray-600 text-sm mt-1">Active Competitors</p>
+                <p className="text-white/60 text-sm mt-1">Active Competitors</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
-                <Clock className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900">
+              <div className="glass rounded-xl p-6 text-center">
+                <Clock className="w-8 h-8 text-blue-400 mx-auto mb-3" />
+                <p className="text-3xl font-bold text-white">
                   {formatDuration(
                     leaderboard?.entries?.reduce((sum, e) => sum + e.studyTime, 0) || 0
                   )}
                 </p>
-                <p className="text-gray-600 text-sm mt-1">Total Study Time</p>
+                <p className="text-white/60 text-sm mt-1">Total Study Time</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
-                <Trophy className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900">
+              <div className="glass rounded-xl p-6 text-center">
+                <Trophy className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                <p className="text-3xl font-bold text-white">
                   {leaderboard?.entries?.reduce((sum, e) => sum + e.points, 0) || 0}
                 </p>
-                <p className="text-gray-600 text-sm mt-1">Total Points Earned</p>
+                <p className="text-white/60 text-sm mt-1">Total Points Earned</p>
               </div>
             </div>
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </DarkThemeLayout>
   )
 }

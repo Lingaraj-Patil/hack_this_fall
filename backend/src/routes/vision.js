@@ -10,7 +10,7 @@ router.post(
   auth,
   visionApiLimiter,
   validate(schemas.visionAnalyze),
-  visionController.analyzeFrame
+  visionController.analyzeFrame.bind(visionController)
 );
 
 module.exports = router;

@@ -11,12 +11,14 @@ import {
   Flame,
   Heart,
   Trophy,
-  BarChart3
+  BarChart3,
+  Play
 } from 'lucide-react'
 import { sessionAPI } from '../api/session'
 import { gamificationAPI } from '../api/gamification'
 import { useAuth } from '../hooks/useAuth'
 import { formatDuration, formatDate } from '../utils/formatTime'
+import DarkThemeLayout from '../components/Layout/DarkThemeLayout'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
@@ -54,99 +56,90 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
-      </div>
+      <DarkThemeLayout title="Dashboard">
+        <div className="flex items-center justify-center min-h-[320px]">
+          <div className="w-16 h-16 border-4 border-green-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DarkThemeLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user?.username}! 👋
-              </h1>
-              <p className="text-gray-600 mt-1">Here's your productivity overview</p>
-            </div>
-            <Link
-              to="/"
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold"
-            >
-              Start Session
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-8 py-8">
+    <DarkThemeLayout 
+      title={`Welcome back, ${user?.username}! 👋`}
+      subtitle="Here's your productivity overview"
+    >
+      <div className="mb-6 flex justify-end">
+        <Link
+          to="/"
+          className="glass px-6 py-3 rounded-full text-white font-semibold hover:bg-white/20 transition flex items-center gap-2"
+        >
+          <Play className="w-5 h-5" />
+          Start Session
+        </Link>
+      </div>
+      
+      <div className="space-y-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Total Points */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+          <div className="glass rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-purple-100 rounded-xl">
-                <Trophy className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-white/10 rounded-xl">
+                <Trophy className="w-6 h-6 text-yellow-400" />
               </div>
-              <span className="text-2xl">🏆</span>
             </div>
-            <h3 className="text-gray-600 text-sm font-medium mb-1">Total Points</h3>
-            <p className="text-3xl font-bold text-gray-900">
+            <h3 className="text-white/80 text-sm font-medium mb-1">Total Points</h3>
+            <p className="text-3xl font-bold text-white">
               {user?.gamification?.totalPoints || 0}
             </p>
-            <p className="text-sm text-green-600 mt-2">
+            <p className="text-sm text-green-300 mt-2">
               Level {user?.gamification?.level || 1}
             </p>
           </div>
 
           {/* Current Streak */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+          <div className="glass rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-orange-100 rounded-xl">
-                <Flame className="w-6 h-6 text-orange-600" />
+              <div className="p-3 bg-white/10 rounded-xl">
+                <Flame className="w-6 h-6 text-orange-400" />
               </div>
-              <span className="text-2xl">🔥</span>
             </div>
-            <h3 className="text-gray-600 text-sm font-medium mb-1">Current Streak</h3>
-            <p className="text-3xl font-bold text-gray-900">
+            <h3 className="text-white/80 text-sm font-medium mb-1">Current Streak</h3>
+            <p className="text-3xl font-bold text-white">
               {user?.gamification?.streak || 0} days
             </p>
-            <p className="text-sm text-gray-500 mt-2">Keep it up!</p>
+            <p className="text-sm text-white/60 mt-2">Keep it up!</p>
           </div>
 
           {/* Hearts */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+          <div className="glass rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-red-100 rounded-xl">
-                <Heart className="w-6 h-6 text-red-600" />
+              <div className="p-3 bg-white/10 rounded-xl">
+                <Heart className="w-6 h-6 text-red-400" />
               </div>
-              <span className="text-2xl">❤️</span>
             </div>
-            <h3 className="text-gray-600 text-sm font-medium mb-1">Hearts</h3>
-            <p className="text-3xl font-bold text-gray-900">
+            <h3 className="text-white/80 text-sm font-medium mb-1">Hearts</h3>
+            <p className="text-3xl font-bold text-white">
               {hearts?.current || 0} / {hearts?.max || 5}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-white/60 mt-2">
               {hearts?.current < hearts?.max ? 'Regenerating...' : 'Full!'}
             </p>
           </div>
 
           {/* This Week */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+          <div className="glass rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <BarChart3 className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-white/10 rounded-xl">
+                <BarChart3 className="w-6 h-6 text-blue-400" />
               </div>
-              <span className="text-2xl">📊</span>
             </div>
-            <h3 className="text-gray-600 text-sm font-medium mb-1">This Week</h3>
-            <p className="text-3xl font-bold text-gray-900">
+            <h3 className="text-white/80 text-sm font-medium mb-1">This Week</h3>
+            <p className="text-3xl font-bold text-white">
               {formatDuration(stats?.totalTime || 0)}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-white/60 mt-2">
               {stats?.totalSessions || 0} sessions
             </p>
           </div>
@@ -156,16 +149,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Sessions */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Recent Sessions</h2>
-                <Link
-                  to="/sessions"
-                  className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center gap-1"
-                >
-                  View all
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
+                <h2 className="text-xl font-bold text-white">Recent Sessions</h2>
               </div>
 
               <div className="space-y-4">
@@ -173,26 +159,26 @@ export default function DashboardPage() {
                   recentSessions.map((session) => (
                     <div
                       key={session._id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition"
+                      className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-green-100 rounded-lg">
-                          <Clock className="w-5 h-5 text-green-600" />
+                        <div className="p-3 bg-white/10 rounded-lg">
+                          <Clock className="w-5 h-5 text-green-400" />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-semibold text-white">
                             {formatDuration(session.duration)}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-white/60">
                             {formatDate(session.createdAt)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-green-600">
+                        <p className="font-bold text-green-400">
                           +{session.netPoints} pts
                         </p>
-                        <p className="text-sm text-gray-500 capitalize">
+                        <p className="text-sm text-white/60 capitalize">
                           {session.status}
                         </p>
                       </div>
@@ -200,11 +186,11 @@ export default function DashboardPage() {
                   ))
                 ) : (
                   <div className="text-center py-12">
-                    <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">No sessions yet</p>
+                    <Calendar className="w-12 h-12 text-white/40 mx-auto mb-3" />
+                    <p className="text-white/60">No sessions yet</p>
                     <Link
                       to="/"
-                      className="text-green-600 hover:text-green-700 text-sm font-medium mt-2 inline-block"
+                      className="text-green-400 hover:text-green-300 text-sm font-medium mt-2 inline-block"
                     >
                       Start your first session
                     </Link>
@@ -217,20 +203,20 @@ export default function DashboardPage() {
           {/* Stats Summary */}
           <div className="space-y-6">
             {/* Weekly Stats */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-              <h3 className="font-bold text-gray-900 mb-4">This Week</h3>
+            <div className="glass rounded-2xl p-6">
+              <h3 className="font-bold text-white mb-4">This Week</h3>
               
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Total Time</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-sm text-white/80">Total Time</span>
+                    <span className="font-semibold text-white">
                       {formatDuration(stats?.totalTime || 0)}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-white/10 rounded-full h-2">
                     <div
-                      className="bg-green-600 h-2 rounded-full transition-all"
+                      className="bg-green-500 h-2 rounded-full transition-all"
                       style={{
                         width: `${Math.min((stats?.totalTime || 0) / 36000 * 100, 100)}%`
                       }}
@@ -240,14 +226,14 @@ export default function DashboardPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Sessions</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-sm text-white/80">Sessions</span>
+                    <span className="font-semibold text-white">
                       {stats?.totalSessions || 0}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-white/10 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all"
+                      className="bg-blue-500 h-2 rounded-full transition-all"
                       style={{
                         width: `${Math.min((stats?.totalSessions || 0) / 20 * 100, 100)}%`
                       }}
@@ -257,14 +243,14 @@ export default function DashboardPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Avg Focus</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-sm text-white/80">Avg Focus</span>
+                    <span className="font-semibold text-white">
                       {Math.round((stats?.avgConcentration || 0) * 100)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-white/10 rounded-full h-2">
                     <div
-                      className="bg-purple-600 h-2 rounded-full transition-all"
+                      className="bg-purple-500 h-2 rounded-full transition-all"
                       style={{
                         width: `${(stats?.avgConcentration || 0) * 100}%`
                       }}
@@ -274,14 +260,14 @@ export default function DashboardPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Efficiency</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-sm text-white/80">Efficiency</span>
+                    <span className="font-semibold text-white">
                       {Math.round(stats?.efficiency || 0)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-white/10 rounded-full h-2">
                     <div
-                      className="bg-orange-600 h-2 rounded-full transition-all"
+                      className="bg-orange-500 h-2 rounded-full transition-all"
                       style={{
                         width: `${stats?.efficiency || 0}%`
                       }}
@@ -292,46 +278,46 @@ export default function DashboardPage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-              <h3 className="font-bold text-gray-900 mb-4">Quick Actions</h3>
+            <div className="glass rounded-2xl p-6">
+              <h3 className="font-bold text-white mb-4">Quick Actions</h3>
               
               <div className="space-y-3">
                 <Link
                   to="/"
-                  className="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition group"
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition group"
                 >
-                  <span className="font-medium text-green-700">Start Session</span>
-                  <ChevronRight className="w-5 h-5 text-green-700 group-hover:translate-x-1 transition" />
+                  <span className="font-medium text-white">Start Session</span>
+                  <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition" />
                 </Link>
 
                 <Link
                   to="/leaderboard"
-                  className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition group"
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition group"
                 >
-                  <span className="font-medium text-purple-700">View Leaderboard</span>
-                  <ChevronRight className="w-5 h-5 text-purple-700 group-hover:translate-x-1 transition" />
+                  <span className="font-medium text-white">View Leaderboard</span>
+                  <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition" />
                 </Link>
 
                 <Link
                   to="/clans"
-                  className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition group"
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition group"
                 >
-                  <span className="font-medium text-blue-700">Join a Clan</span>
-                  <ChevronRight className="w-5 h-5 text-blue-700 group-hover:translate-x-1 transition" />
+                  <span className="font-medium text-white">Join a Clan</span>
+                  <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition" />
                 </Link>
 
                 <Link
                   to="/settings"
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition group"
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition group"
                 >
-                  <span className="font-medium text-gray-700">Settings</span>
-                  <ChevronRight className="w-5 h-5 text-gray-700 group-hover:translate-x-1 transition" />
+                  <span className="font-medium text-white">Settings</span>
+                  <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition" />
                 </Link>
               </div>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DarkThemeLayout>
   )
 }

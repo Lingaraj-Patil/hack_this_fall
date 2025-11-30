@@ -7,6 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        // primary colors can still be used, but prefer CSS variables for theming
         primary: {
           50: '#f0fdf4',
           100: '#dcfce7',
@@ -18,7 +19,11 @@ export default {
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
-        }
+        },
+        accent: 'var(--accent)',
+        'accent-600': 'var(--accent-600)',
+        'accent-muted': 'var(--accent-muted)',
+        rec: 'var(--rec-color)'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

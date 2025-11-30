@@ -29,7 +29,7 @@ export default function LoginPage() {
         {/* Logo & Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-display font-bold text-gray-900 mb-2">
-            GetLockedIn
+            DeepDive
           </h1>
           <p className="text-gray-600">
             Welcome back! Let's get productive 🚀

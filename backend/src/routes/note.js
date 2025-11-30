@@ -23,11 +23,11 @@ const updateNoteSchema = Joi.object({
   isPinned: Joi.boolean().optional()
 });
 
-router.post('/', auth, validate(createNoteSchema), noteController.createNote);
-router.get('/', auth, noteController.getNotes);
-router.get('/tags', auth, noteController.getNoteTags);
-router.get('/:noteId', auth, noteController.getNoteById);
-router.put('/:noteId', auth, validate(updateNoteSchema), noteController.updateNote);
-router.delete('/:noteId', auth, noteController.deleteNote);
+router.post('/', auth, validate(createNoteSchema), noteController.createNote.bind(noteController));
+router.get('/', auth, noteController.getNotes.bind(noteController));
+router.get('/tags', auth, noteController.getNoteTags.bind(noteController));
+router.get('/:noteId', auth, noteController.getNoteById.bind(noteController));
+router.put('/:noteId', auth, validate(updateNoteSchema), noteController.updateNote.bind(noteController));
+router.delete('/:noteId', auth, noteController.deleteNote.bind(noteController));
 
 module.exports = router;

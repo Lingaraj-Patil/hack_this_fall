@@ -11,6 +11,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Theme variables (calmer accent palette) */
+:root {
+  --overlay: rgba(0,0,0,0.6);
+  --glass-bg: rgba(10, 12, 16, 0.56);
+  --glass-border: rgba(255,255,255,0.04);
+  --accent: #2dd4bf; /* teal */
+  --accent-600: #14b8a6;
+  --accent-muted: #6ee7b7;
+  --rec-color: rgba(239, 68, 68, 0.92); /* red */
+  --timer-color: #f8fafc;
+  --panel-bg: rgba(6,8,10,0.5);
+}
+
+/* Light theme (optional) */
+.theme-light {
+  --overlay: rgba(255,255,255,0.12);
+  --glass-bg: rgba(255,255,255,0.9);
+  --glass-border: rgba(0,0,0,0.06);
+  --accent: #0ea5a4;
+  --rec-color: rgba(220,38,38,0.95);
+  --timer-color: #0f172a;
+  --panel-bg: rgba(255,255,255,0.9);
+}
+
 /* Timer shadow */
 .timer-digits {
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -18,16 +42,61 @@ body {
 
 /* Glassmorphism Light */
 .glass {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 /* Glassmorphism Dark */
 .glass-dark {
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Session page specific overrides to reduce brightness and improve contrast */
+.session-page .glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.session-page .glass-dark {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.session-page .timer-digits {
+  color: var(--timer-color);
+  text-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.session-page .search-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Accent / button styles */
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-600) 100%);
+  color: #042027;
+}
+.btn-primary:hover {
+  filter: brightness(0.95);
+}
+
+.rec-badge {
+  background: linear-gradient(180deg, var(--rec-color), rgba(220,38,38,0.85));
+  color: #fff;
+}
+
+.webcam-frame {
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+/* Reduce harsh white outlines on controls inside session */
+.session-page .glass.rounded-full {
+  background: rgba(255,255,255,0.03);
 }

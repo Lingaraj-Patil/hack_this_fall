@@ -16,6 +16,7 @@ import {
 import { clansAPI } from '../api/clans'
 import { useAuth } from '../hooks/useAuth'
 import Modal from '../components/Common/Modal'
+import DarkThemeLayout from '../components/Layout/DarkThemeLayout'
 import { formatDuration } from '../utils/formatTime'
 import toast from 'react-hot-toast'
 
@@ -28,63 +29,51 @@ export default function ClanPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
-
-  // Create clan form
-  const [createForm, setCreateForm] = useState({
-    name: '',
-    description: '',
-    isPrivate: false,
-    maxMembers: 50,
-  })
-
-  // Join clan form
-  const [inviteCode, setInviteCode] = useState('')
+  const [createForm, setCreateForm] = useState({ name: '', description: '', isPrivate: false })
+  const [joinCode, setJoinCode] = useState('')
 
   useEffect(() => {
-    fetchData()
-  }, [user])
+    fetchClanData()
+  }, [])
 
-  const fetchData = async () => {
+  const fetchClanData = async () => {
     try {
       setLoading(true)
-      
-      if (user?.clanId) {
-        const clanRes = await clansAPI.getMyClan()
-        setMyClan(clanRes.data.data)
-      } else {
-        const clansRes = await clansAPI.getAll({ page: 1, limit: 20 })
-        setAllClans(clansRes.data.data)
-      }
+      const [myClanRes, allClansRes] = await Promise.all([
+        clansAPI.getMyClan().catch(() => ({ data: { data: null } })),
+        clansAPI.getAll({ search: searchQuery })
+      ])
+      setMyClan(myClanRes.data.data)
+      setAllClans(allClansRes.data.data || [])
     } catch (error) {
-      console.error('Failed to fetch clan data:', error)
+      toast.error('Failed to load clan data')
+      console.error(error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCreateClan = async (e) => {
-    e.preventDefault()
+  const handleCreateClan = async () => {
     try {
-      const res = await clansAPI.create(createForm)
-      setMyClan(res.data.data)
-      updateUser({ clanId: res.data.data._id })
+      const response = await clansAPI.create(createForm)
+      setMyClan(response.data.data)
       setShowCreateModal(false)
-      toast.success('Clan created successfully! 🎉')
-      setCreateForm({ name: '', description: '', isPrivate: false, maxMembers: 50 })
+      setCreateForm({ name: '', description: '', isPrivate: false })
+      toast.success('Clan created successfully!')
+      updateUser({ clan: response.data.data._id })
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to create clan')
     }
   }
 
-  const handleJoinClan = async (e) => {
-    e.preventDefault()
+  const handleJoinClan = async () => {
     try {
-      const res = await clansAPI.join(inviteCode)
-      setMyClan(res.data.data)
-      updateUser({ clanId: res.data.data._id })
+      const response = await clansAPI.join(joinCode)
+      setMyClan(response.data.data)
       setShowJoinModal(false)
-      toast.success('Joined clan successfully! 🎊')
-      setInviteCode('')
+      setJoinCode('')
+      toast.success('Joined clan successfully!')
+      updateUser({ clan: response.data.data._id })
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to join clan')
     }
@@ -92,104 +81,91 @@ export default function ClanPage() {
 
   const handleLeaveClan = async () => {
     if (!confirm('Are you sure you want to leave this clan?')) return
-
     try {
       await clansAPI.leave()
       setMyClan(null)
-      updateUser({ clanId: null })
       toast.success('Left clan successfully')
-      fetchData()
+      updateUser({ clan: null })
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to leave clan')
+      toast.error('Failed to leave clan')
     }
   }
 
   const copyInviteCode = () => {
-    if (myClan?.inviteCode) {
-      navigator.clipboard.writeText(myClan.inviteCode)
-      setCopiedCode(true)
-      toast.success('Invite code copied!')
-      setTimeout(() => setCopiedCode(false), 2000)
-    }
+    navigator.clipboard.writeText(myClan.inviteCode)
+    setCopiedCode(true)
+    toast.success('Invite code copied!')
+    setTimeout(() => setCopiedCode(false), 2000)
   }
 
   const getMemberRole = (member) => {
     if (member.role === 'leader') return { icon: Crown, color: 'text-yellow-500', label: 'Leader' }
     if (member.role === 'admin') return { icon: Shield, color: 'text-blue-500', label: 'Admin' }
-    return { icon: Users, color: 'text-gray-500', label: 'Member' }
+    return { icon: Users, color: 'text-gray-400', label: 'Member' }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      </div>
+      <DarkThemeLayout title="Clans">
+        <div className="flex items-center justify-center min-h-[240px]">
+          <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DarkThemeLayout>
     )
   }
 
   // If user has a clan, show clan dashboard
   if (myClan) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">{myClan.name}</h1>
-                  <p className="text-gray-600 mt-1">{myClan.description}</p>
-                </div>
-              </div>
-              <button
-                onClick={handleLeaveClan}
-                className="px-6 py-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition font-semibold flex items-center gap-2"
-              >
-                <LogOut className="w-5 h-5" />
-                Leave Clan
-              </button>
-            </div>
-          </div>
-        </header>
+      <DarkThemeLayout 
+        title={myClan.name}
+        subtitle={myClan.description}
+      >
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={handleLeaveClan}
+            className="glass px-6 py-3 rounded-full text-red-300 font-semibold hover:bg-red-500/20 transition flex items-center gap-2"
+          >
+            <LogOut className="w-5 h-5" />
+            Leave Clan
+          </button>
+        </div>
 
-        <main className="max-w-7xl mx-auto px-8 py-8">
+        <div className="space-y-8">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-3">
-                <Trophy className="w-6 h-6 text-yellow-500" />
-                <h3 className="text-gray-600 font-medium">Total Points</h3>
+                <Trophy className="w-6 h-6 text-yellow-400" />
+                <h3 className="text-white/80 font-medium">Total Points</h3>
               </div>
-              <p className="text-3xl font-bold text-gray-900">{myClan.totalPoints}</p>
+              <p className="text-3xl font-bold text-white">{myClan.totalPoints}</p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-3">
-                <Users className="w-6 h-6 text-blue-500" />
-                <h3 className="text-gray-600 font-medium">Members</h3>
+                <Users className="w-6 h-6 text-blue-400" />
+                <h3 className="text-white/80 font-medium">Members</h3>
               </div>
-              <p className="text-3xl font-bold text-gray-900">
+              <p className="text-3xl font-bold text-white">
                 {myClan.members?.length || 0}/{myClan.maxMembers}
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-3">
-                <Trophy className="w-6 h-6 text-purple-500" />
-                <h3 className="text-gray-600 font-medium">Sessions</h3>
+                <Trophy className="w-6 h-6 text-purple-400" />
+                <h3 className="text-white/80 font-medium">Sessions</h3>
               </div>
-              <p className="text-3xl font-bold text-gray-900">{myClan.stats?.totalSessions || 0}</p>
+              <p className="text-3xl font-bold text-white">{myClan.stats?.totalSessions || 0}</p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-3">
-                <Trophy className="w-6 h-6 text-green-500" />
-                <h3 className="text-gray-600 font-medium">Study Time</h3>
+                <Trophy className="w-6 h-6 text-green-400" />
+                <h3 className="text-white/80 font-medium">Study Time</h3>
               </div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-white">
                 {formatDuration(myClan.stats?.totalStudyTime || 0)}
               </p>
             </div>
@@ -198,8 +174,8 @@ export default function ClanPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Members List */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Members</h2>
+              <div className="glass rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-white mb-6">Members</h2>
                 
                 <div className="space-y-3">
                   {myClan.members?.map((member) => {
@@ -209,27 +185,27 @@ export default function ClanPage() {
                     return (
                       <div
                         key={member.userId._id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition"
+                        className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition"
                       >
                         <div className="flex items-center gap-4">
                           <img
                             src={member.userId.profile?.avatar}
                             alt={member.userId.username}
-                            className="w-12 h-12 rounded-full border-2 border-white shadow"
+                            className="w-12 h-12 rounded-full border-2 border-white/30 shadow"
                           />
                           <div>
-                            <p className="font-semibold text-gray-900 flex items-center gap-2">
+                            <p className="font-semibold text-white flex items-center gap-2">
                               {member.userId.username}
                               <RoleIcon className={`w-4 h-4 ${roleInfo.color}`} />
                             </p>
-                            <p className="text-sm text-gray-500">{roleInfo.label}</p>
+                            <p className="text-sm text-white/60">{roleInfo.label}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-purple-600">
+                          <p className="font-bold text-purple-300">
                             {member.contributionPoints || 0} pts
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-white/60">
                             Level {member.userId.gamification?.level || 1}
                           </p>
                         </div>
@@ -243,44 +219,44 @@ export default function ClanPage() {
             {/* Clan Info & Actions */}
             <div className="space-y-6">
               {/* Invite Code */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-4">Invite Code</h3>
+              <div className="glass rounded-2xl p-6">
+                <h3 className="font-bold text-white mb-4">Invite Code</h3>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 px-4 py-3 bg-gray-100 rounded-lg font-mono text-lg font-bold text-gray-900">
+                  <div className="flex-1 px-4 py-3 bg-white/10 rounded-lg font-mono text-lg font-bold text-white">
                     {myClan.inviteCode}
                   </div>
                   <button
                     onClick={copyInviteCode}
-                    className="p-3 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition"
+                    className="p-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition"
                   >
                     {copiedCode ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                   </button>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-white/60 mt-2">
                   Share this code with friends to invite them
                 </p>
               </div>
 
               {/* Quick Stats */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-4">Quick Stats</h3>
+              <div className="glass rounded-2xl p-6">
+                <h3 className="font-bold text-white mb-4">Quick Stats</h3>
                 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Avg Focus</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-sm text-white/80">Avg Focus</span>
+                    <span className="font-semibold text-white">
                       {Math.round((myClan.stats?.avgConcentration || 0) * 100)}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Privacy</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-sm text-white/80">Privacy</span>
+                    <span className="font-semibold text-white">
                       {myClan.isPrivate ? 'Private' : 'Public'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Created</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="text-sm text-white/80">Created</span>
+                    <span className="font-semibold text-white">
                       {new Date(myClan.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -288,232 +264,185 @@ export default function ClanPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </DarkThemeLayout>
     )
   }
 
   // If user doesn't have a clan, show browse/create options
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Users className="w-8 h-8 text-blue-600" />
-                Clans
-              </h1>
-              <p className="text-gray-600 mt-1">Join or create a clan to compete with friends</p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowJoinModal(true)}
-                className="px-6 py-3 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition font-semibold flex items-center gap-2"
-              >
-                <UserPlus className="w-5 h-5" />
-                Join Clan
-              </button>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition font-semibold flex items-center gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                Create Clan
-              </button>
-            </div>
-          </div>
+    <DarkThemeLayout 
+      title="Clans"
+      subtitle="Join or create a clan to compete with friends"
+    >
+      <div className="mb-6 flex justify-end gap-3">
+        <button
+          onClick={() => setShowJoinModal(true)}
+          className="glass px-6 py-3 rounded-full text-white font-semibold hover:bg-white/20 transition flex items-center gap-2"
+        >
+          <UserPlus className="w-5 h-5" />
+          Join Clan
+        </button>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="glass px-6 py-3 rounded-full text-white font-semibold hover:bg-white/20 transition flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600"
+        >
+          <Plus className="w-5 h-5" />
+          Create Clan
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="mb-6">
+        <div className="glass rounded-2xl p-4 flex items-center gap-3">
+          <Search className="w-5 h-5 text-white/60" />
+          <input
+            type="text"
+            placeholder="Search clans..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              fetchClanData()
+            }}
+            className="flex-1 bg-transparent text-white placeholder-white/60 outline-none"
+          />
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-8 py-8">
-        {/* Search */}
-        <div className="mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search clans..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        {/* Clans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allClans
-            .filter(clan => 
-              clan.name.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((clan) => (
-              <div
-                key={clan._id}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:shadow-lg transition"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
-                    <Shield className="w-6 h-6 text-white" />
-                  </div>
-                  {clan.isPrivate && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                      Private
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{clan.name}</h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {clan.description || 'No description'}
-                </p>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Members</span>
-                    <span className="font-semibold text-gray-900">
-                      {clan.members?.length || 0}/{clan.maxMembers}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Total Points</span>
-                    <span className="font-semibold text-purple-600">
-                      {clan.totalPoints}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setShowJoinModal(true)
-                  }}
-                  disabled={clan.members?.length >= clan.maxMembers}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {clan.members?.length >= clan.maxMembers ? 'Full' : 'Join Clan'}
-                </button>
+      {/* Clan List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {allClans.map((clan) => (
+          <div
+            key={clan._id}
+            className="glass rounded-2xl p-6 hover:bg-white/5 transition"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-            ))}
-        </div>
-
-        {allClans.length === 0 && (
-          <div className="text-center py-20">
-            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">No public clans available</p>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">{clan.name}</h3>
+            <p className="text-white/70 text-sm mb-4">{clan.description}</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-white/60 text-sm">
+                <Users className="w-4 h-4" />
+                <span>{clan.members?.length || 0}/{clan.maxMembers}</span>
+              </div>
+              <div className="text-purple-300 font-semibold">
+                {clan.totalPoints} pts
+              </div>
+            </div>
             <button
-              onClick={() => setShowCreateModal(true)}
-              className="mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+              onClick={() => {
+                setJoinCode(clan.inviteCode)
+                setShowJoinModal(true)
+              }}
+              className="w-full glass px-4 py-2 rounded-lg text-white font-medium hover:bg-white/20 transition"
             >
-              Create the First Clan
+              Join Clan
             </button>
           </div>
-        )}
-      </main>
+        ))}
+      </div>
 
-      {/* Create Clan Modal */}
+      {allClans.length === 0 && (
+        <div className="text-center py-12">
+          <Shield className="w-16 h-16 text-white/40 mx-auto mb-4" />
+          <p className="text-white/60 text-lg">No clans found</p>
+          <p className="text-white/40 text-sm mt-2">
+            Create your own clan to get started!
+          </p>
+        </div>
+      )}
+
+      {/* Create Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create New Clan"
+        title="Create Clan"
       >
-        <form onSubmit={handleCreateClan} className="space-y-4">
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Clan Name *
-            </label>
+            <label className="block text-sm font-medium text-white/80 mb-2">Clan Name</label>
             <input
               type="text"
-              required
               value={createForm.name}
               onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 outline-none focus:border-white/40"
               placeholder="Enter clan name"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-white/80 mb-2">Description</label>
             <textarea
               value={createForm.description}
               onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 outline-none focus:border-white/40"
+              placeholder="Describe your clan"
               rows={3}
-              placeholder="Describe your clan..."
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Max Members
-            </label>
-            <input
-              type="number"
-              min={2}
-              max={100}
-              value={createForm.maxMembers}
-              onChange={(e) => setCreateForm({ ...createForm, maxMembers: parseInt(e.target.value) })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="isPrivate"
+              id="private"
               checked={createForm.isPrivate}
               onChange={(e) => setCreateForm({ ...createForm, isPrivate: e.target.checked })}
-              className="w-4 h-4 text-blue-600 rounded"
+              className="w-4 h-4"
             />
-            <label htmlFor="isPrivate" className="text-sm text-gray-700">
-              Make clan private (invite only)
-            </label>
+            <label htmlFor="private" className="text-sm text-white/80">Private Clan</label>
           </div>
-
-          <button
-            type="submit"
-            className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition font-semibold"
-          >
-            Create Clan
-          </button>
-        </form>
+          <div className="flex gap-3">
+            <button
+              onClick={handleCreateClan}
+              className="flex-1 glass px-6 py-3 rounded-lg text-white font-semibold hover:bg-white/20 transition"
+            >
+              Create
+            </button>
+            <button
+              onClick={() => setShowCreateModal(false)}
+              className="px-6 py-3 bg-white/10 rounded-lg text-white hover:bg-white/20 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </Modal>
 
-      {/* Join Clan Modal */}
+      {/* Join Modal */}
       <Modal
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
         title="Join Clan"
-        size="sm"
       >
-        <form onSubmit={handleJoinClan} className="space-y-4">
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Invite Code *
-            </label>
+            <label className="block text-sm font-medium text-white/80 mb-2">Invite Code</label>
             <input
               type="text"
-              required
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-lg"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 outline-none focus:border-white/40 font-mono text-center text-lg"
               placeholder="Enter invite code"
+              maxLength={8}
             />
-            <p className="text-sm text-gray-500 mt-2">
-              Ask your friend for their clan's invite code
-            </p>
           </div>
-
-          <button
-            type="submit"
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
-          >
-            Join Clan
-          </button>
-        </form>
+          <div className="flex gap-3">
+            <button
+              onClick={handleJoinClan}
+              className="flex-1 glass px-6 py-3 rounded-lg text-white font-semibold hover:bg-white/20 transition"
+            >
+              Join
+            </button>
+            <button
+              onClick={() => setShowJoinModal(false)}
+              className="px-6 py-3 bg-white/10 rounded-lg text-white hover:bg-white/20 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </Modal>
-    </div>
+    </DarkThemeLayout>
   )
 }

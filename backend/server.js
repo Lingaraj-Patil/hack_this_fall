@@ -37,6 +37,15 @@ async function startServer() {
     
     logger.info('🔌 Socket.IO initialized');
 
+    // Start background job to check for stale sessions (no frames received)
+    const visionController = require('./src/controllers/visionController');
+    setInterval(() => {
+      visionController.checkStaleSessions().catch(err => {
+        logger.error('Error in stale session check:', err);
+      });
+    }, 5000); // Check every 5 seconds
+    logger.info('⏰ Stale session checker started');
+
     // Graceful shutdown
     const shutdown = async (signal) => {
       logger.info(`${signal} received, closing server gracefully...`);
