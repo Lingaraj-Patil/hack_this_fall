@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Site Blocked - Study Monitor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      text-align: center;
+      color: white;
+      max-width: 600px;
+    }
+
+    .icon {
+      font-size: 120px;
+      margin-bottom: 20px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .site-blocked {
+      font-size: 24px;
+      opacity: 0.9;
+      margin-bottom: 32px;
+    }
+
+    .message {
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: 0.95;
+      margin-bottom: 40px;
+    }
+
+    .stats {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-item {
+      margin: 12px 0;
+      font-size: 16px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 16px 32px;
+      background: white;
+      color: #667eea;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .blocked-site {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 8px;
+      display: inline-block;
+      margin: 8px 0;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🚫</div>
+    <h1>Site Blocked</h1>
+    <div class="site-blocked">
+      <span class="blocked-site" id="siteName">Loading...</span>
+    </div>
+    <div class="message">
+      This website is blocked during your study session.<br>
+      Stay focused! You're doing great! 💪
+    </div>
+    <div class="stats">
+      <div class="stat-item">
+        ⏱️ Session in progress
+      </div>
+      <div class="stat-item">
+        🎯 Keep up the focus!
+      </div>
+      <div class="stat-item">
+        ❤️ Your future self will thank you
+      </div>
+    </div>
+    <a href="http://localhost:3000" class="btn">
+      Return to Dashboard
+    </a>
+  </div>
+
+  <script>
+    // Get blocked site from URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const site = params.get('site');
+    if (site) {
+      document.getElementById('siteName').textContent = site;
+    }
+  </script>
+</body>
+</html>
