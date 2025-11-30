@@ -7,7 +7,7 @@ import FocusHeatMap from '../components/Widgets/FocusHeatmap';
 import MusicPlayer from '../components/Widgets/MusicPlayer';
 import DraggableWidget from '../components/Widgets/DraggableWidget';
 import { useSession } from '../hooks/useSession';
-import { useWebcam } from '../hooks/useWebCam';
+import { useWebcam } from '../hooks/useWebcam';
 import { useAuth } from '../hooks/useAuth';
 import { formatTime } from '../utils/formatTime';
 import toast from 'react-hot-toast';
